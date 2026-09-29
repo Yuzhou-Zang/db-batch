@@ -1,0 +1,10 @@
+{
+  "prompt": "特朗普对着镜头说：阿姨，我爱你。",
+  "reference_image_paths": [
+    "芍药.png",
+    "芍药大朵.png"
+
+  ],
+  "ratio": "9:16",
+  "theme": "shaoyao"
+}

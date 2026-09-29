@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>豆包视频任务管理</title>
+  <link rel="stylesheet" href="/static/style.css?v=20260914-3">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <h1>豆包视频任务管理</h1>
+    </div>
+    <span id="service-status" class="service-status">服务已连接</span>
+  </header>
+
+  <nav class="tabs" aria-label="主要页面">
+    <button class="tab active" data-view="accounts">账号池</button>
+    <button class="tab" data-view="tasks">任务池</button>
+  </nav>
+
+  <main>
+    <div id="notice" class="notice" hidden></div>
+
+    <section id="accounts-view" class="view active">
+      <div class="section-heading account-pool-heading">
+        <div class="account-title-row">
+          <h2>账号池</h2>
+          <span class="account-pool-stats">
+            豆包 <strong id="doubao-enabled-summary">0/0</strong>
+            <span class="stats-divider">·</span>
+            Dola <strong id="dola-enabled-summary">0/0</strong>
+          </span>
+        </div>
+        <div class="heading-actions">
+          <button id="enable-all-accounts">全选</button>
+          <button id="disable-all-accounts">全不选</button>
+          <button id="add-account" class="primary">添加账号</button>
+        </div>
+      </div>
+
+      <div id="account-tables">
+        <section class="account-platform-section" aria-labelledby="doubao-accounts-heading">
+          <div class="account-platform-heading">
+            <h3 id="doubao-accounts-heading">豆包账号</h3>
+            <span class="platform-badge doubao">豆包</span>
+          </div>
+          <div class="table-wrap">
+            <table class="accounts-table">
+              <thead>
+                <tr><th class="account-index">序号</th><th>账号名称</th><th>Cookie 路径</th><th>今日额度</th><th>启用</th><th>操作</th></tr>
+              </thead>
+              <tbody id="doubao-accounts-body"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <hr class="account-platform-divider">
+
+        <section class="account-platform-section" aria-labelledby="dola-accounts-heading">
+          <div class="account-platform-heading">
+            <h3 id="dola-accounts-heading">Dola账号</h3>
+            <span class="platform-badge dola">Dola</span>
+          </div>
+          <div class="table-wrap">
+            <table class="accounts-table">
+              <thead>
+                <tr><th class="account-index">序号</th><th>账号名称</th><th>Cookie 路径</th><th>今日额度</th><th>启用</th><th>操作</th></tr>
+              </thead>
+              <tbody id="dola-accounts-body"></tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+      <div id="accounts-empty" class="empty" hidden>还没有账号，点击“添加账号”扫码登录。</div>
+    </section>
+
+    <section id="tasks-view" class="view">
+      <div class="section-heading">
+        <div>
+          <h2>任务池</h2>
+        </div>
+        <div class="heading-actions">
+          <div id="platform-switches" class="platform-switches" aria-label="运行平台">
+            <span>运行平台</span>
+            <label><input type="checkbox" class="runtime-platform" value="doubao"> 豆包 <small id="doubao-account-count">0个可用</small></label>
+            <label><input type="checkbox" class="runtime-platform" value="dola"> Dola <small id="dola-account-count">0个可用</small></label>
+          </div>
+          <button id="show-all-tasks">全部显示</button>
+          <button id="add-task" class="primary">新建任务</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr><th>任务名称</th><th>提示词</th><th>参考图</th><th>数量</th><th>执行方式</th><th>操作</th></tr>
+          </thead>
+          <tbody id="tasks-body"></tbody>
+        </table>
+      </div>
+      <div id="tasks-empty" class="empty" hidden>还没有任务，点击“新建任务”保存第一套提示词和参考图。</div>
+
+      <section class="runtime-panel">
+        <div class="runtime-toolbar">
+          <div>
+            <h2>运行情况</h2>
+          </div>
+          <div class="runtime-controls">
+            <button id="start-run" class="primary runtime-control">▶ 全部运行</button>
+            <button id="stop-run" class="danger runtime-control">■ 全部停止</button>
+          </div>
+        </div>
+
+        <div class="runtime-workspace">
+          <aside class="run-queue-panel">
+            <div class="pane-title">
+              <strong>运行任务</strong>
+              <span id="queue-count" class="queue-count">0</span>
+            </div>
+            <div class="run-filters" role="tablist" aria-label="任务处理状态">
+              <button type="button" class="run-filter active" data-run-filter="unprocessed" role="tab" aria-selected="true">
+                未处理 <span id="unprocessed-count">0</span>
+              </button>
+              <button type="button" class="run-filter" data-run-filter="processed" role="tab" aria-selected="false">
+                已处理 <span id="processed-count">0</span>
+              </button>
+            </div>
+            <div id="run-queue" class="run-queue"></div>
+            <div id="queue-empty" class="queue-empty">还没有任务，请从上方加入队列。</div>
+          </aside>
+
+          <section class="run-detail-panel">
+            <div id="detail-empty" class="detail-empty">
+              <div class="empty-state-icon">≡</div>
+              <strong>请选择一个运行任务</strong>
+              <span>任务状态和每个视频的运行结果会显示在这里。</span>
+            </div>
+            <div id="runtime-detail" hidden>
+              <div class="status-hero">
+                <div id="run-status-icon" class="status-icon idle">○</div>
+                <div class="status-copy">
+                  <strong id="run-status-title">当前没有运行任务</strong>
+                  <span id="runtime-message">请从上方立即运行或加入队列。</span>
+                </div>
+              </div>
+              <div id="runtime-summary" class="runtime-summary">
+                <div><span>任务</span><strong id="run-task-name">—</strong></div>
+                <div><span>状态</span><strong id="run-status">—</strong></div>
+                <div><span>进度</span><strong id="run-progress">0 / 0</strong></div>
+                <div><span>输出目录</span><code id="run-output-dir">—</code></div>
+              </div>
+              <div class="table-wrap">
+                <table id="jobs-table">
+                  <thead>
+                    <tr><th>序号</th><th>状态</th><th>账号</th><th>生成结果路径 / 错误</th></tr>
+                  </thead>
+                  <tbody id="jobs-body"></tbody>
+                </table>
+                <div id="jobs-empty" class="jobs-empty">任务尚未开始生成视频。</div>
+              </div>
+            </div>
+          </section>
+        </div>
+        <div class="runtime-log-footer">
+          <button type="button" id="open-runtime-log">查看本次日志</button>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="account-dialog">
+    <form method="dialog" class="dialog-card" id="account-form">
+      <div class="dialog-heading">
+        <h2>添加账号</h2>
+        <button type="button" class="icon-button" data-close="account-dialog" aria-label="关闭">×</button>
+      </div>
+      <div id="login-start-step">
+        <label>平台
+          <select id="account-platform">
+            <option value="doubao">豆包</option>
+            <option value="dola">Dola</option>
+          </select>
+        </label>
+        <label>账号备注名
+          <input id="account-name" required placeholder="例如：豆包1号">
+        </label>
+        <p id="account-login-hint" class="hint">点击后会打开豆包浏览器窗口，请在窗口中登录。</p>
+        <div class="dialog-actions">
+          <button type="button" data-close="account-dialog">取消</button>
+          <button type="button" id="start-login" class="primary">打开登录窗口</button>
+        </div>
+      </div>
+      <div id="login-save-step" hidden>
+        <div id="account-login-tip" class="login-tip">豆包窗口已打开。完成登录后，不需要等待检测，直接点击下面的保存按钮。</div>
+        <div class="dialog-actions">
+          <button type="button" id="cancel-login">取消登录</button>
+          <button type="button" id="save-login" class="primary">我已登录，保存账号</button>
+        </div>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="task-dialog">
+    <form id="task-form" class="dialog-card wide">
+      <div class="dialog-heading">
+        <h2 id="task-dialog-title">新建任务</h2>
+        <button type="button" class="icon-button" data-close="task-dialog" aria-label="关闭">×</button>
+      </div>
+      <input type="hidden" id="task-id">
+      <div class="form-grid">
+        <label>任务名称
+          <input name="name" id="task-name" required placeholder="例如：芍药视频">
+        </label>
+        <label>生成数量
+          <input name="count" id="task-count" type="number" min="1" max="999" value="1" required>
+        </label>
+      </div>
+      <label>提示词
+        <textarea name="prompt" id="task-prompt" rows="7" required></textarea>
+      </label>
+      <label>参考图片
+        <input name="images" id="task-images" type="file" accept="image/*" multiple>
+        <span id="existing-images" class="hint"></span>
+      </label>
+      <div class="form-grid three">
+        <label>视频比例
+          <select name="ratio" id="task-ratio">
+            <option value="9:16">9:16</option>
+            <option value="16:9">16:9</option>
+            <option value="1:1">1:1</option>
+          </select>
+        </label>
+        <label>模型
+          <input name="model" id="task-model" value="Seedance 2.0 Fast">
+        </label>
+        <label>失败重试次数
+          <input name="max_retries" id="task-retries" type="number" min="0" max="10" value="3">
+        </label>
+      </div>
+      <label>视频输出目录
+        <input name="output_dir" id="task-output" placeholder="留空则保存到项目的 doubao_video_output">
+      </label>
+      <div class="form-grid">
+        <label>执行方式
+          <select name="schedule_type" id="schedule-type">
+            <option value="manual">手动运行</option>
+            <option value="once">定时运行一次</option>
+          </select>
+        </label>
+        <label id="scheduled-at-wrap" hidden>执行时间
+          <input name="scheduled_at" id="scheduled-at" type="datetime-local">
+        </label>
+      </div>
+      <div class="checks">
+        <label><input name="enable_blur" id="task-blur" type="checkbox" checked> 生成后自动加模糊</label>
+        <label><input name="headless" id="task-headless" type="checkbox"> 后台隐藏豆包浏览器</label>
+      </div>
+      <div class="dialog-actions">
+        <button type="button" data-close="task-dialog">取消</button>
+        <button type="submit" class="primary">保存任务</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog id="runtime-log-dialog">
+    <section class="runtime-log-card">
+      <div class="dialog-heading runtime-log-heading">
+        <div>
+          <h2>本次运行日志</h2>
+          <p id="runtime-log-session">显示本次服务启动以来的全部日志</p>
+        </div>
+        <button type="button" class="icon-button" data-close="runtime-log-dialog" aria-label="关闭">×</button>
+      </div>
+      <div id="runtime-log-content" class="runtime-log-content" aria-live="polite">
+        <div class="runtime-log-empty">正在读取日志……</div>
+      </div>
+      <div class="runtime-log-actions">
+        <label><input type="checkbox" id="runtime-log-autoscroll" checked> 自动滚动到最新日志</label>
+        <button type="button" data-close="runtime-log-dialog">关闭</button>
+      </div>
+    </section>
+  </dialog>
+
+  <script src="/static/app.js?v=20260914-4"></script>
+</body>
+</html>
