@@ -191,3 +191,6 @@ cookiesFile
 uploadFile
 videoFile
 
+# 生成的视频产物（体积大，不入库）
+doubao_video_output/
+
